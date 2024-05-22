@@ -8,6 +8,8 @@ const ChatBot = () => {
   const [history, setHistory] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [speechError, setSpeechError] = useState(null);
+  const [showPopover, setShowPopover] = useState(false);
+
   const recognitionRef = useRef(null);
   const synthRef = useRef(window.speechSynthesis);
   const utteranceRef = useRef(null);
@@ -33,7 +35,7 @@ const ChatBot = () => {
         model: "gemini-1.5-flash-latest",
         generationConfig,
         systemInstruction:
-          "I'm a voice assistant created by Irfan. I'll provide helpful, concise answers, aiming for under 5 lines.",
+          "I'm a voice assistant created by Irfan. I'll provide helpful, concise answers, aiming for under 5 lines in plain text without emoji & markdown.",
       });
 
       setGenAI(genAIInstance);
@@ -45,6 +47,13 @@ const ChatBot = () => {
 
   useEffect(() => {
     if (!genAI || !model) return;
+
+    if (
+      ("SpeechRecognition" in window || "webkitSpeechRecognition" in window)
+    ) {
+      setShowPopover(true);
+      return;
+    }
 
     const recognition = new (window.SpeechRecognition ||
       window.webkitSpeechRecognition)();
@@ -75,8 +84,6 @@ const ChatBot = () => {
   const handleResult = async (event) => {
     const transcript = event.results[0][0].transcript.trim();
 
-    console.log("Recognized speech:", transcript);
-
     setHistory((prevHistory) => [
       ...prevHistory,
       { role: "user", parts: transcript },
@@ -97,14 +104,12 @@ const ChatBot = () => {
 
       speakResponse(markdownToPlainText(text));
     } catch (error) {
-      console.error("Error processing response:", error);
       setSpeechError(error.message);
       setIsProcessing(false);
     }
   };
 
   const handleError = (event) => {
-    console.error("Speech recognition error:", event.error);
     setSpeechError(event.error);
     setIsProcessing(false);
   };
@@ -132,6 +137,8 @@ const ChatBot = () => {
   };
 
   const toggleSpeechRecognition = () => {
+    if (!recognitionRef.current) return;
+
     synthRef.current.cancel();
     if (isProcessing) {
       recognitionRef.current.stop();
@@ -151,7 +158,7 @@ const ChatBot = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-svh bg-black text-white p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
       <div
         className="flex flex-col w-full h-[70vh] overflow-y-auto mb-4 p-2 rounded"
         ref={chatContainerRef}
@@ -164,11 +171,11 @@ const ChatBot = () => {
             }
           >
             {item.role === "user" ? (
-              <span className="prose font-semibold text-blue-400">
+              <span className="prose  font-sans font-bold text-blue-400">
                 {item.parts}
               </span>
             ) : (
-              <ReactMarkdown className="prose font-semibold prose-invert">
+              <ReactMarkdown className="prose bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-400   font-sans font-bold prose-invert">
                 {item.parts}
               </ReactMarkdown>
             )}
@@ -196,6 +203,20 @@ const ChatBot = () => {
           ></motion.div>
         )}
       </div>
+      {showPopover && (
+        <div className="absolute top-0 left-0 right-0 p-4 bg-red-600 text-white font-sans  text-center">
+          Web Speech API is not supported in this browser. Please open the web
+          app on Chrome or Safari
+          <a
+            href="https://ai.iefan.tech"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 font-semibold underline ml-1"
+          >
+            Click here
+          </a>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { FaMicrophone, FaMicrophoneAltSlash } from "react-icons/fa";
+import { SiGoogleassistant } from "react-icons/si";
+
 import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion";
 
@@ -193,7 +195,7 @@ const ChatBot = () => {
           {isProcessing ? (
             <FaMicrophoneAltSlash className="text-3xl text-white" />
           ) : (
-            <FaMicrophone className="text-3xl text-white" />
+            <SiGoogleassistant className="text-3xl text-white" />
           )}
         </motion.button>
         {isProcessing && (
@@ -204,14 +206,14 @@ const ChatBot = () => {
         )}
       </div>
       {showPopover && (
-        <div className="absolute top-0 left-0 right-0 p-4 bg-red-600 text-white font-sans  text-center">
+        <div className="absolute top-0 left-0 font-semibold right-0 p-4 bg-red-600 text-white font-sans  text-center">
           Web Speech API is not supported in this browser. Please open this web
           app on Chrome or Safari
           <a
             href="https://ai.iefan.tech"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-400 font-semibold underline ml-1"
+            className="text-blue-400 font-bold underline ml-1"
           >
             Click here
           </a>

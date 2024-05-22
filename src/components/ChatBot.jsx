@@ -49,7 +49,7 @@ const ChatBot = () => {
     if (!genAI || !model) return;
 
     if (
-      ("SpeechRecognition" in window || "webkitSpeechRecognition" in window)
+      !("SpeechRecognition" in window || "webkitSpeechRecognition" in window)
     ) {
       setShowPopover(true);
       return;

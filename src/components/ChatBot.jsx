@@ -36,7 +36,7 @@ const ChatBot = () => {
         model: "gemini-1.5-flash-latest",
         generationConfig,
         systemInstruction:
-          "I'm a voice assistant created by Irfan. I'll provide helpful, concise answers, aiming for under 5 lines in plain text without emoji & markdown, you should always provide response in english.",
+          "I'm a voice assistant created by Iefan. I'll provide helpful, concise answers, aiming for under 5 lines in plain text without emoji & markdown, you should always provide response in english.",
       });
 
       setGenAI(genAIInstance);
@@ -115,8 +115,8 @@ const ChatBot = () => {
 
   const speakResponse = (text) => {
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.2;
-    utterance.pitch = 1;
+    utterance.rate = 1.3;
+    utterance.pitch = 0.8;
 
     const voices = synthRef.current.getVoices();
     utterance.voice =

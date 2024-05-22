@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { FaMicrophone, FaMicrophoneAltSlash } from "react-icons/fa";
 import { SiGoogleassistant } from "react-icons/si";
-
 import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion";
 
@@ -37,7 +36,7 @@ const ChatBot = () => {
         model: "gemini-1.5-flash-latest",
         generationConfig,
         systemInstruction:
-          "I'm a voice assistant created by Irfan. I'll provide helpful, concise answers, aiming for under 5 lines in plain text without emoji & markdown.",
+          "I'm a voice assistant created by Irfan. I'll provide helpful, concise answers, aiming for under 5 lines in plain text without emoji & markdown, you should always provide response in english.",
       });
 
       setGenAI(genAIInstance);
@@ -48,17 +47,24 @@ const ChatBot = () => {
   }, []);
 
   useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  }, [history]);
+
+  useEffect(() => {
     if (!genAI || !model) return;
 
-    if (
-      !("SpeechRecognition" in window || "webkitSpeechRecognition" in window)
-    ) {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
       setShowPopover(true);
       return;
     }
 
-    const recognition = new (window.SpeechRecognition ||
-      window.webkitSpeechRecognition)();
+    const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.lang = "en-US";
@@ -76,13 +82,6 @@ const ChatBot = () => {
     };
   }, [genAI, model]);
 
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
-    }
-  }, [history]);
-
   const handleResult = async (event) => {
     const transcript = event.results[0][0].transcript.trim();
 
@@ -90,7 +89,6 @@ const ChatBot = () => {
       ...prevHistory,
       { role: "user", parts: transcript },
     ]);
-
     setIsProcessing(true);
 
     try {
@@ -103,7 +101,6 @@ const ChatBot = () => {
         ...prevHistory,
         { role: "model", parts: text },
       ]);
-
       speakResponse(markdownToPlainText(text));
     } catch (error) {
       setSpeechError(error.message);
@@ -120,9 +117,10 @@ const ChatBot = () => {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 1.2;
     utterance.pitch = 1;
-    utterance.voice = synthRef.current
-      .getVoices()
-      .find((voice) => voice.name === "Google UK English Female");
+
+    const voices = synthRef.current.getVoices();
+    utterance.voice =
+      voices.find((voice) => voice.lang.startsWith("en")) || voices[0];
 
     utterance.onend = () => {
       setIsProcessing(false);
@@ -144,19 +142,11 @@ const ChatBot = () => {
     synthRef.current.cancel();
     if (isProcessing) {
       recognitionRef.current.stop();
-      if (utteranceRef.current) {
-        synthRef.current.cancel();
-      }
       setIsProcessing(false);
     } else {
       recognitionRef.current.start();
       setIsProcessing(true);
     }
-  };
-
-  const stopSpeech = () => {
-    synthRef.current.cancel();
-    setIsProcessing(false);
   };
 
   return (
@@ -173,11 +163,11 @@ const ChatBot = () => {
             }
           >
             {item.role === "user" ? (
-              <span className="prose  font-sans font-bold text-blue-400">
+              <span className="prose font-sans font-bold text-blue-400">
                 {item.parts}
               </span>
             ) : (
-              <ReactMarkdown className="prose bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-400   font-sans font-bold prose-invert">
+              <ReactMarkdown className="prose bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-400 font-sans font-bold prose-invert">
                 {item.parts}
               </ReactMarkdown>
             )}
@@ -201,14 +191,14 @@ const ChatBot = () => {
         {isProcessing && (
           <motion.div
             className="absolute w-20 h-20 rounded-full border-4 border-blue-300 animate-ping"
-            onClick={stopSpeech}
+            onClick={() => synthRef.current.cancel()}
           ></motion.div>
         )}
       </div>
       {showPopover && (
-        <div className="absolute top-0 left-0 font-semibold right-0 p-4 bg-red-600 text-white font-sans  text-center">
+        <div className="absolute top-0 left-0 right-0 p-4 bg-red-600 text-white text-center">
           Web Speech API is not supported in this browser. Please open this web
-          app on Chrome or Safari
+          app on Chrome or Safari.
           <a
             href="https://ai.iefan.tech"
             target="_blank"

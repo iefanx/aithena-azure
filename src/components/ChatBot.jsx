@@ -205,7 +205,7 @@ const ChatBot = () => {
       </div>
       {showPopover && (
         <div className="absolute top-0 left-0 right-0 p-4 bg-red-600 text-white font-sans  text-center">
-          Web Speech API is not supported in this browser. Please open the web
+          Web Speech API is not supported in this browser. Please open this web
           app on Chrome or Safari
           <a
             href="https://ai.iefan.tech"

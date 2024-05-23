@@ -176,7 +176,7 @@ const ChatBot = () => {
       </div>
       <div className="relative flex items-center justify-center w-full h-20">
         <motion.button
-          onClick={toggleSpeechRecognition}
+          onMouseDown={toggleSpeechRecognition}
           className={`flex items-center justify-center w-20 h-20 rounded-full shadow-lg transition ${
             isProcessing ? "bg-red-600 pulse" : "bg-blue-600"
           }`}
@@ -191,7 +191,7 @@ const ChatBot = () => {
         {isProcessing && (
           <motion.div
             className="absolute w-20 h-20 rounded-full border-4 border-blue-300 animate-ping"
-            onClick={() => synthRef.current.cancel()}
+            onMouseDown={() => synthRef.current.cancel()}
           ></motion.div>
         )}
       </div>
